@@ -1,0 +1,48 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - heading "Mobility Demo Assistant" [level=1] [ref=e5]
+    - paragraph [ref=e6]: "Simple TypeScript demo: mobility insights + policy triage chat."
+  - generic [ref=e7]:
+    - generic [ref=e8]:
+      - generic [ref=e9]:
+        - text: "Country:"
+        - combobox "Country:" [ref=e10]:
+          - option "Global" [selected]
+          - option "United States (15)"
+          - option "Germany (10)"
+          - option "France (8)"
+          - option "United Kingdom (8)"
+          - option "Switzerland (7)"
+          - option "Australia (6)"
+          - option "Japan (5)"
+          - option "Russia (5)"
+          - option "Sweden (4)"
+          - option "China (4)"
+          - option "Italy (4)"
+          - option "Taiwan (3)"
+          - option "Belgium (3)"
+          - option "India (3)"
+          - option "Thailand (3)"
+          - option "Saudi Arabia (3)"
+          - option "Turkey (2)"
+          - option "Poland (2)"
+          - option "Indonesia (1)"
+          - option "South Korea (1)"
+          - option "Brazil (1)"
+          - option "Spain (1)"
+          - option "Canada (1)"
+      - button "Load structured insights" [ref=e11] [cursor=pointer]
+    - generic [ref=e12]:
+      - button "What’s working globally?" [ref=e13] [cursor=pointer]
+      - button "What’s not working globally?" [ref=e14] [cursor=pointer]
+      - button "Top pain points in Germany" [ref=e15] [cursor=pointer]
+      - button "Policy pre-check for United Kingdom" [ref=e16] [cursor=pointer]
+  - generic [ref=e17]:
+    - generic [ref=e18]:
+      - generic [ref=e20]: "Ask me: top pain points by country, what’s working/not working, or policy pre-check guidance."
+      - generic [ref=e21]:
+        - textbox "Ask a mobility question..." [ref=e22]
+        - button "Send" [ref=e23] [cursor=pointer]
+    - generic [ref=e24]:
+      - heading "Data panel" [level=2] [ref=e25]
+      - generic [ref=e26]: No data loaded yet.
