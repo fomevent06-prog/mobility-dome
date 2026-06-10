@@ -2,6 +2,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import path from "path";
+import { BasicRagService } from "./basicRag";
 import { defaultDataDir, MobilityDataService } from "./data";
 import { EyGuideDataService } from "./eyGuideData";
 
@@ -14,6 +15,7 @@ dotenv.config({ path: path.join(process.cwd(), ".env") });
 const dataDir = defaultDataDir();
 const surveyService = new MobilityDataService(dataDir);
 const eyService = new EyGuideDataService(dataDir);
+const ragService = new BasicRagService(dataDir, surveyService, eyService);
 
 app.get("/api/health", (_req, res) => {
   res.json({ status: "ok" });
@@ -28,9 +30,33 @@ app.get("/api/insights", (req, res) => {
   res.json(surveyService.insights(country));
 });
 
+app.get("/api/rag/status", (_req, res) => {
+  res.json(ragService.status());
+});
+
+app.post("/api/rag/ask", async (req, res) => {
+  const question = typeof req.body?.question === "string" ? req.body.question.trim() : "";
+  if (!question) {
+    res.status(400).json({ error: "Question is required." });
+    return;
+  }
+  const requestedCountry = typeof req.body?.country === "string" ? req.body.country.trim() : undefined;
+  const detectedCountry = requestedCountry || surveyService.detectCountry(question) || eyService.detectCountry(question);
+  try {
+    const result = await ragService.ask(question, detectedCountry);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      error: "Failed to answer question.",
+      detail: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
+
 async function bootstrap(): Promise<void> {
   await surveyService.load();
   await eyService.load();
+  await ragService.load();
 
   const port = Number(process.env.PORT ?? 4000);
   app.listen(port, () => {

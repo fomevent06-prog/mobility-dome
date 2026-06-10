@@ -11,7 +11,6 @@ type GuideCache = {
   sourcePdfUrl: string;
   rawText: string;
   countries: string[];
-  countrySentiment: Record<string, "positive" | "neutral" | "negative">;
   docs: RagDocument[];
 };
 
@@ -110,63 +109,9 @@ function buildDocsFromText(text: string): { docs: RagDocument[]; countries: stri
   return { docs: docs.slice(0, 320), countries: [...new Set(countries)] };
 }
 
-function countrySentimentLabel(text: string): "positive" | "neutral" | "negative" {
-  const lower = text.toLowerCase();
-  const positiveWords = [
-    "exempt",
-    "favorable",
-    "relief",
-    "clear",
-    "streamlined",
-    "flexible",
-    "incentive",
-    "support"
-  ];
-  const negativeWords = [
-    "complex",
-    "restriction",
-    "penalty",
-    "risk",
-    "burden",
-    "strict",
-    "taxed",
-    "withholding",
-    "requirement"
-  ];
-  const pos = positiveWords.reduce((n, w) => n + (lower.includes(w) ? 1 : 0), 0);
-  const neg = negativeWords.reduce((n, w) => n + (lower.includes(w) ? 1 : 0), 0);
-  if (pos - neg >= 2) return "positive";
-  if (neg - pos >= 2) return "negative";
-  return "neutral";
-}
-
-function buildCountrySentimentDocs(
-  docs: RagDocument[],
-  countries: string[]
-): { sentimentMap: Record<string, "positive" | "neutral" | "negative">; sentimentDocs: RagDocument[] } {
-  const sentimentMap: Record<string, "positive" | "neutral" | "negative"> = {};
-  const sentimentDocs: RagDocument[] = [];
-  for (const country of countries) {
-    const countryText = docs
-      .filter((d) => (d.country ?? "").toLowerCase() === country.toLowerCase())
-      .map((d) => d.text)
-      .join("\n");
-    const label = countrySentimentLabel(countryText);
-    sentimentMap[country] = label;
-    sentimentDocs.push({
-      id: `offline-sentiment-${country.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-      source: "offline-sentiment",
-      country,
-      text: `Country: ${country}\nOffline sentiment classification for mobility experience: ${label}. This label is a heuristic signal from the country text and should be treated as directional only.`
-    });
-  }
-  return { sentimentMap, sentimentDocs };
-}
-
 export class EyGuideDataService {
   private docs: RagDocument[] = [];
   private countriesList: string[] = [];
-  private countrySentiment: Record<string, "positive" | "neutral" | "negative"> = {};
   private readonly cachePath: string;
 
   constructor(private readonly dataDir: string) {
@@ -189,17 +134,14 @@ export class EyGuideDataService {
       await parser.destroy();
       const rawText = normalizeText(parsed.text || "");
       const { docs, countries } = buildDocsFromText(rawText);
-      const { sentimentMap, sentimentDocs } = buildCountrySentimentDocs(docs, countries);
       if (!docs.length) throw new Error("No text chunks were extracted from EY guide PDF.");
 
-      this.docs = [...docs, ...sentimentDocs];
+      this.docs = docs;
       this.countriesList = countries;
-      this.countrySentiment = sentimentMap;
       const cache: GuideCache = {
         updatedAt: new Date().toISOString(),
         sourcePdfUrl: pdfUrl,
         rawText,
-        countrySentiment: this.countrySentiment,
         docs: this.docs,
         countries: this.countriesList
       };
@@ -209,15 +151,8 @@ export class EyGuideDataService {
         throw error;
       }
       const cached = JSON.parse(fs.readFileSync(this.cachePath, "utf-8")) as GuideCache;
-      this.docs = cached.docs ?? [];
+      this.docs = (cached.docs ?? []).filter((d) => d.source !== "offline-sentiment");
       this.countriesList = cached.countries ?? [];
-      this.countrySentiment = cached.countrySentiment ?? {};
-      if (!this.docs.some((d) => d.source === "offline-sentiment") && this.countriesList.length) {
-        const baseDocs = this.docs.filter((d) => d.source !== "offline-sentiment");
-        const { sentimentMap, sentimentDocs } = buildCountrySentimentDocs(baseDocs, this.countriesList);
-        this.countrySentiment = sentimentMap;
-        this.docs = [...baseDocs, ...sentimentDocs];
-      }
       if (!this.docs.length) throw error;
     }
   }

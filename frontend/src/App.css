@@ -24,6 +24,119 @@
   opacity: 0.78;
 }
 
+.sectionTitle {
+  margin-bottom: 10px;
+  font-weight: 600;
+  color: var(--text-h);
+}
+
+.suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  border: 1px solid var(--accent-border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font: inherit;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.chatCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.messages {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 52vh;
+  overflow: auto;
+}
+
+.message {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.message.user {
+  background: color-mix(in srgb, var(--accent-bg) 70%, var(--bg) 30%);
+}
+
+.message.assistant {
+  background: color-mix(in srgb, var(--bg) 86%, #ffffff 14%);
+}
+
+.messageRole {
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.messageText {
+  white-space: pre-wrap;
+}
+
+.messageMeta {
+  margin-top: 8px;
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.sources {
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+}
+
+.composer input {
+  flex: 1;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+  background: var(--bg);
+  color: var(--text-h);
+}
+
+.composer button {
+  border: 1px solid var(--accent-border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  background: var(--accent);
+  color: white;
+  font: inherit;
+  cursor: pointer;
+}
+
+.composer button:disabled,
+.chip:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loading {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.error {
+  color: #b42318;
+  font-size: 14px;
+}
+
 button:hover {
   filter: brightness(0.98);
 }

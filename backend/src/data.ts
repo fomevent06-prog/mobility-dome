@@ -59,17 +59,6 @@ function topThemes(answers: string[], limit = 5): Array<{ theme: string; count: 
     .map(([theme, count]) => ({ theme, count }));
 }
 
-function countrySentimentLabel(text: string): "positive" | "neutral" | "negative" {
-  const lower = text.toLowerCase();
-  const positiveWords = ["support", "good", "clear", "helpful", "efficient", "smooth", "positive"];
-  const negativeWords = ["delay", "complex", "issue", "difficult", "stress", "negative", "frustrating"];
-  const pos = positiveWords.reduce((n, w) => n + (lower.includes(w) ? 1 : 0), 0);
-  const neg = negativeWords.reduce((n, w) => n + (lower.includes(w) ? 1 : 0), 0);
-  if (pos - neg >= 2) return "positive";
-  if (neg - pos >= 2) return "negative";
-  return "neutral";
-}
-
 export class MobilityDataService {
   private rows: Row[] = [];
   private ragDocs: RagDocument[] = [];
@@ -151,20 +140,6 @@ export class MobilityDataService {
         source: "survey",
         country: country || undefined,
         text: `Country: ${country || "Unknown"}\nQuestion: ${qn}\nAnswer: ${answer}`
-      });
-    }
-
-    for (const country of this.countries().map((c) => c.country)) {
-      const countryText = docs
-        .filter((d) => (d.country ?? "").toLowerCase() === country.toLowerCase())
-        .map((d) => d.text)
-        .join("\n");
-      const label = countrySentimentLabel(countryText);
-      docs.push({
-        id: `offline-sentiment-${country.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`,
-        source: "offline-sentiment",
-        country,
-        text: `Country: ${country}\nOffline sentiment classification for mobility experience: ${label}. This is derived from survey responses only.`
       });
     }
 
